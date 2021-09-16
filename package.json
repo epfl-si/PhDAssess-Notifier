@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/notifier.js",
   "scripts": {
+    "start": "ts-node -r dotenv/config ./src/index.ts",
     "test": "mocha -r ts-node/register tests/**/*.test.ts"
   },
   "keywords": [],
@@ -18,12 +19,14 @@
     "zeebe-node": "^1.3.2"
   },
   "devDependencies": {
+    "@tsconfig/node16": "^1.0.2",
     "@types/chai": "^4.2.21",
     "@types/chai-fs": "^2.0.2",
     "@types/crypto-js": "^4.0.1",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^9.0.0",
     "@types/mustache": "^4.1.2",
+    "@types/nodemailer": "^6.4.4",
     "chai": "^4.3.4",
     "chai-fs": "^2.0.0",
     "mocha": "^9.0.3",
