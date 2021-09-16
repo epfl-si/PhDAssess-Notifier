@@ -6,8 +6,7 @@
   "scripts": {
     "start": "ts-node -r dotenv/config ./src/index.ts",
     "test": "mocha -r ts-node/register tests/**/*.test.ts",
-    "build": "tsc -p .",
-    "build-docker": "npm run build && docker build --tag phd-assess-notifier ."
+    "build": "tsc -p ."
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,9 @@
+# To push this playbook to OpenShift, say
+#
+#   ansible-playbook playbook.yml -i hosts-oc-prod
+
+- name: PhD Assess notifier
+  hosts: all
+  gather_facts: no   # Not yet
+  roles:
+    - role: roles/epfl.phd-assess

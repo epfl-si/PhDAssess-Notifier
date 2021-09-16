@@ -1,0 +1,3 @@
+
+[phd-assess-group]
+phd-assess      ansible_connection=local   openshift_namespace=phd-assess

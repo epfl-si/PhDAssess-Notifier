@@ -1,0 +1,12 @@
+
+---
+# vars file for epfl.phd-assess
+app_name: "phd-assess"
+svc_name: "{{ app_name }}"
+route_name: "{{ app_name }}"
+phd_assess_notifier_servicename: "phd-assess-notifier"
+openshift_image_registry: "os-docker-registry.epfl.ch"
+openshift_local_image_registry: "docker-registry.default.svc:5000"
+phd_assess_notifier_image_tag: "{{openshift_image_registry}}/{{openshift_namespace}}/{{phd_assess_notifier_servicename}}:latest"
+secret_name: "phd-assess.secrets"
+encryption_key_name: "PHDASSESS_ENCRYPTION_KEY"

@@ -1,0 +1,104 @@
+- name: Locally build and tag phd-assess-meteor image
+  tags:
+    - notifier-build
+    - never
+  shell: |
+    set -e -x
+    npm run build && docker build --tag {{ phd_assess_notifier_image_tag }} ..
+  delegate_to: localhost
+  register: output_docker_build
+- debug: var=output_docker_build.stdout_lines
+  tags:
+    - notifier-build
+    - never
+
+- name: Log into the Openshift docker repository and push the image
+  tags:
+    - notifier-push
+    - never
+  shell: |
+    set -e -x
+    oc whoami -t | docker login {{ phd_assess_notifier_image_tag }} -u unused --password-stdin
+    docker push {{ phd_assess_notifier_image_tag }}
+  register: output_push_image
+  delegate_to: localhost
+- debug: var=output_push_image.stdout_lines
+  tags:
+    - notifier-push
+    - never
+
+- name: phd-assess-notifier Deployment Config
+  tags:
+    - meteor
+  openshift:
+    apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      name: phd-assess-notifier
+      namespace: "{{openshift_namespace}}"
+    spec:
+      replicas: 1
+      selector:
+        deployment-config.name: phd-assess-notifier
+      strategy:
+        activeDeadlineSeconds: 21600
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+        resources:
+          limits:
+            cpu: 1
+            memory: 300M
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            deployment-config.name: phd-assess-notifier
+        spec:
+          containers:
+            - env:
+              - name: 'ZEEBE_ADDRESS'
+                value: 'zeebe-broker:26500'
+              - name: 'ZEEBE_TASK_TYPE'
+                value: 'notification'
+              - name: 'NOTIFIER_PORT'
+                value: '587'
+              - name: 'NOTIFIER_HOST'
+                value: 'smtp.ethereal.email'
+              - name: 'NOTIFIER_FROM_ADDRESS'
+                value: 'noreply@epfl.ch'
+              - name: 'ETHEREAL_USERNAME'
+                value: 'casandra.greenfelder@ethereal.email'
+              - name: 'ETHEREAL_NAME'
+                value: 'Casandra Greenfelder'
+              - name: "{{ encryption_key_name }}"
+                valueFrom:
+                  secretKeyRef:
+                    name: "{{ secret_name }}"
+                    key: "{{ encryption_key_name }}"
+              image: 'docker-registry.default.svc:5000/{{openshift_namespace}}/phd-assess-notifier:latest'
+              imagePullPolicy: Always
+              name: phd-assess-notifier
+              resources:
+                limits:
+                  cpu: 1
+                  memory: 300M
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: { }
+          terminationGracePeriodSeconds: 30
+      triggers:
+      - type: ImageChange
+        imageChangeParams:
+          automatic: true
+          containerNames:
+          - phd-assess-notifier
+          from:
+            kind: ImageStreamTag
+            name: 'phd-assess-notifier:latest'
+            namespace: "{{openshift_namespace}}"

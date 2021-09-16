@@ -1,0 +1,6 @@
+- name: Secrets tasks
+  include_tasks: '{{ "secrets.yml" }}'
+
+- name: Phd assess notifier tasks
+  include_tasks: '{{ "phd_assess_notifier.yml" }}'
+  tags: [notifier-build, notifier-push]
