@@ -3,8 +3,8 @@ import * as Process from "process";
 
 export const epflTransporter = createTransport({
   host: process.env.NOTIFIER_HOST || "smtp.ethereal.email",
-  port: Number(process.env.NOTIFIER_PORT) || 587,
-  secure: true, // true for 465, false for other ports
+  port: Number(process.env.NOTIFIER_PORT) || 25,
+  secure: true,
 })
 
 // create reusable transporter object using the default SMTP transport

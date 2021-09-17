@@ -25,41 +25,55 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   const jobVariables: InputVariables = decryptVariables(job.variables)
 
   debug(`Checking task validity...`)
-  if (!job.customHeaders.message) worker.log(`Task step has no messages. Fix the BPMN`)
-  debug(`Task seems valid, continuing`)
+  let whatsMissingDescription: string[] = []
+  if (!job.customHeaders.subject)
+    whatsMissingDescription.push('job custom headers has no "subject"')
+  if (!job.customHeaders.message)
+    whatsMissingDescription.push('job custom headers has no "message"')
+  if (!jobVariables.to)
+    whatsMissingDescription.push('job variables has no "cc"')
 
-  const renderedMessage = Mustache.render(job.customHeaders.message, jobVariables);
-
-  debug(`Building the email info (rendering content, filling addresses, ...`)
-  // TODO: fill to and cc with addresses (aka input parameters)
-  const emailInfo  = {
-    from: process.env.NOTIFIER_FROM_ADDRESS || "noreply@epfl.ch",
-    to: ["bar@example.com", "baz@example.com"],
-    cc: "bar@example.com",
-    subject: job.customHeaders.subject,
-    html: renderedMessage,
-  }
-
-  smtpDebug(`Choosing the transporter to send the email`)
-  if (process.env.ETHEREAL_USERNAME) {
-    smtpDebug(`Using ethereal mail service to send the email`)
-    const etherealMail = await etherealTransporter()
-    let info = await etherealMail.sendMail(emailInfo);
-
-    smtpDebug("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", getTestMessageUrl(info));
+  if (whatsMissingDescription.length > 0) {
+    debug(`Job variables : ${jobVariables}`)
+    debug(`Job custom headers : ${job.customHeaders}`)
+    worker.log(`Failing the job without any retry because ${whatsMissingDescription}.
+     Fix the workflow BPMN version n. ${job.workflowDefinitionVersion}`)
+    return job.error('unexpected BPMN variables', whatsMissingDescription.join(', '))
   } else {
-    smtpDebug(`Using EPFL mail service to send the email`)
-    let info = await epflTransporter.sendMail(emailInfo)
-    smtpDebug(`SMTP server returned: ${info.response}`)
-  }
+    debug(`Task has pass the validity, continuing`)
 
-  // AfterTask worker business logic goes here
-  debug(`Completing and updating the process instance with dateSent`)
-  const updateBrokerVariables = {
-    dateSent: encrypt(new Date().toJSON()),
+    const renderedMessage = Mustache.render(job.customHeaders.message, jobVariables);
+
+    debug(`Building the email info (rendering content, filling addresses, ...`)
+
+    const emailInfo  = {
+      from: process.env.NOTIFIER_FROM_ADDRESS || "noreply@epfl.ch",
+      to: jobVariables.to,
+      cc: jobVariables.cc,
+      subject: job.customHeaders.subject,
+      html: renderedMessage,
+    }
+
+    if (process.env.ETHEREAL_USERNAME) {
+      smtpDebug(`Using ethereal mail service to send the email`)
+      const etherealMail = await etherealTransporter()
+      let info = await etherealMail.sendMail(emailInfo);
+
+      smtpDebug("Message sent: %s", info.messageId);
+      console.log("Preview URL: %s", getTestMessageUrl(info));
+    } else {
+      smtpDebug(`Using EPFL mail service to send the email`)
+      let info = await epflTransporter.sendMail(emailInfo)
+      smtpDebug(`SMTP server returned: ${info.response}`)
+    }
+
+    // AfterTask worker business logic goes here
+    debug(`Completing and updating the process instance, adding dateSent as output variables`)
+    const updateBrokerVariables = {
+      dateSent: encrypt(new Date().toJSON()),
+    }
+    return job.complete(updateBrokerVariables)
   }
-  return job.complete(updateBrokerVariables)
 }
 
 export const startWorker = () => {
