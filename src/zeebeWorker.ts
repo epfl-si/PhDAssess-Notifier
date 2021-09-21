@@ -31,13 +31,13 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   if (!job.customHeaders.message)
     whatsMissingDescription.push('job custom headers has no "message"')
   if (!jobVariables.to)
-    whatsMissingDescription.push('job variables has no "cc"')
+    whatsMissingDescription.push('job variables has no "to"')
 
   if (whatsMissingDescription.length > 0) {
     debug(`Job variables : ${jobVariables}`)
     debug(`Job custom headers : ${job.customHeaders}`)
     worker.log(`Failing the job without any retry because ${whatsMissingDescription}.
-     Fix the workflow BPMN version n. ${job.workflowDefinitionVersion}`)
+     Fix the workflow BPMN version n. ${job.workflowDefinitionVersion}, step ${job.elementId}`)
     return job.error('unexpected BPMN variables', whatsMissingDescription.join(', '))
   } else {
     debug(`Task has pass the validity, continuing`)
