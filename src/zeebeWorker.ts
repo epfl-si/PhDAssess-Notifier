@@ -6,6 +6,7 @@ import Mustache from "mustache"
 import {encrypt, decryptVariables} from "./encryption"
 import {epflTransporter, etherealTransporter} from "./transporters";
 import {getTestMessageUrl} from "nodemailer";
+import {Attachment} from "nodemailer/lib/mailer";
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
 const smtpDebug = debug_('phd-assess-notifier/SMTP')
@@ -46,12 +47,23 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     debug(`Building the email info (rendering content, filling addresses, ...`)
 
+    let attachments: Attachment[] = []
+
+    if (jobVariables.PDF) {
+      attachments.push({
+        filename: `phd_annual_report_${job.key}.pdf`,
+        content: jobVariables.PDF,
+        encoding: 'base64',
+      })
+    }
+
     const emailInfo  = {
       from: process.env.NOTIFIER_FROM_ADDRESS || "noreply@epfl.ch",
       to: jobVariables.to,
       cc: jobVariables.cc,
       subject: job.customHeaders.subject,
       html: renderedMessage,
+      attachments: attachments
     }
 
     if (process.env.ETHEREAL_USERNAME) {
@@ -86,5 +98,5 @@ export const startWorker = () => {
     // load every job into the in-memory server db
     taskHandler: handler
   })
-  console.log(`worker started`)
+  console.log(`worker started, awaiting for ${taskType} jobs...`)
 }
