@@ -2,9 +2,12 @@ import {createTransport, createTestAccount} from "nodemailer";
 import * as Process from "process";
 
 export const epflTransporter = createTransport({
-  host: process.env.NOTIFIER_HOST || "smtp.ethereal.email",
-  port: Number(process.env.NOTIFIER_PORT) || 25,
-  secure: true,
+  host: process.env.NOTIFIER_HOST,
+  port: Number(process.env.NOTIFIER_PORT),
+  secure: false,
+  tls: {
+    ciphers:'SSLv3'
+  }
 })
 
 // create reusable transporter object using the default SMTP transport
