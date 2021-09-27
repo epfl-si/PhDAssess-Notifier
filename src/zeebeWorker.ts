@@ -1,5 +1,6 @@
 import {ZBClient} from "zeebe-node";
 import {Duration, ZBWorkerTaskHandler} from 'zeebe-node'
+import __ from 'lodash'
 import debug_ from 'debug'
 import {InputVariables, CustomHeaders, OutputVariables} from "./types"
 import Mustache from "mustache"
@@ -22,7 +23,12 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   _,
   worker
   ) => {
-  worker.debug(`Received and starting the ${taskType} job ${job.key}`)
+
+  console.log("Received and starting task", {
+      taskType,
+      job: __.omit(job, 'customHeaders')
+  })
+
   const jobVariables: InputVariables = decryptVariables(job.variables)
 
   debug(`Checking task validity...`)

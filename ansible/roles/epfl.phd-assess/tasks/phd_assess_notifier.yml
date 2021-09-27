@@ -75,6 +75,8 @@
                 value: 'casandra.greenfelder@ethereal.email'
               - name: 'ETHEREAL_NAME'
                 value: 'Casandra Greenfelder'
+              - name: 'CONSOLE_LOG_JSON_NO_STACK_FOR_NON_ERROR'
+                value: 'true'
               - name: "{{ encryption_key_name }}"
                 valueFrom:
                   secretKeyRef:
