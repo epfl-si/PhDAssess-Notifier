@@ -49,7 +49,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   } else {
     debug(`Task has pass the validity, continuing`)
 
-    const renderedMessage = Mustache.render(job.customHeaders.message, jobVariables);
+    const renderedSubject = Mustache.render(job.customHeaders.subject, jobVariables)
+    const renderedMessage = Mustache.render(job.customHeaders.message, jobVariables)
 
     debug(`Building the email info (rendering content, filling addresses, ...`)
 
@@ -67,7 +68,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       from: process.env.NOTIFIER_FROM_ADDRESS || "noreply@epfl.ch",
       to: jobVariables.to,
       cc: jobVariables.cc,
-      subject: job.customHeaders.subject,
+      subject: renderedSubject,
       html: renderedMessage,
       attachments: attachments
     }
