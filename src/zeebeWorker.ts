@@ -13,7 +13,7 @@ const debug = debug_('phd-assess-notifier/zeebeWorker')
 const smtpDebug = debug_('phd-assess-notifier/SMTP')
 
 export const zBClient = new ZBClient({
-  pollInterval: Duration.seconds.of(15),
+  "pollInterval": Duration.seconds.of(15),
 })
 
 const taskType = process.env.ZEEBE_TASK_TYPE ? process.env.ZEEBE_TASK_TYPE : ''
@@ -68,6 +68,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       from: process.env.NOTIFIER_FROM_ADDRESS || "noreply@epfl.ch",
       to: jobVariables.to,
       cc: jobVariables.cc,
+      bcc: jobVariables.bcc,
       subject: renderedSubject,
       html: renderedMessage,
       attachments: attachments

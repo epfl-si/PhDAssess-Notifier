@@ -1,6 +1,7 @@
 export interface InputVariables {
   to?: string
   cc?: string
+  bcc?: string
   PDF?: string
 }
 
