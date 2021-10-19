@@ -29,7 +29,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       job: __.omit(job, 'customHeaders')
   })
 
-  const jobVariables: InputVariables = decryptVariables(job.variables)
+  const jobVariables: InputVariables = decryptVariables(job)
 
   debug(`Checking task validity...`)
   let whatsMissingDescription: string[] = []

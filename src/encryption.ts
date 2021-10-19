@@ -2,6 +2,7 @@ import debug_ from "debug";
 
 const CryptoJS = require("crypto-js");
 const debug = debug_('encryption')
+import {Job} from "zeebe-node"
 
 export function encrypt(message: string | [], passphrase: string | undefined = process.env.PHDASSESS_ENCRYPTION_KEY): string {
   if (passphrase === undefined) {
@@ -28,12 +29,19 @@ export function decrypt(cryptedMessage: string, passphrase: string | undefined =
   }
 }
 
-export function decryptVariables(variables: {[key: string]: string}): {[key: string]: string} {
+export function decryptVariables(job: Job): {[key: string]: string} {
   const decryptedVariables: {[key: string]: string} = {}
 
-  Object.keys(variables).map((key) => {
+  Object.keys(job.variables).map((key) => {
     try {
-      decryptedVariables[key] = decrypt(variables[key])
+      if (Array.isArray(job.variables[key])) {
+        decryptedVariables[key] = job.variables[key].reduce((acc: string[], item: string) => {
+          acc.push(decrypt(item))
+          return acc
+        }, [])
+      } else {
+        decryptedVariables[key] = decrypt(job.variables[key])
+      }
     } catch (e) {
       if (e instanceof SyntaxError) {
         // not good, some values are not readable. Get the error for now,
