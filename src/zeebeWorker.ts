@@ -65,7 +65,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     }
 
     const emailInfo  = {
-      from: process.env.NOTIFIER_FROM_ADDRESS || "noreply@epfl.ch",
+      from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
       to: jobVariables.to,
       cc: jobVariables.cc,
       bcc: jobVariables.bcc,
