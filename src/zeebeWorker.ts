@@ -74,17 +74,23 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       attachments: attachments
     }
 
-    if (process.env.ETHEREAL_USERNAME) {
-      smtpDebug(`Using ethereal mail service to send the email`)
-      const etherealMail = await etherealTransporter()
-      let info = await etherealMail.sendMail(emailInfo);
-
-      smtpDebug("Message sent: %s", info.messageId);
-      console.log("Preview URL: %s", getTestMessageUrl(info));
-    } else {
+    if (process.env.NOTIFIER_HOST && process.env.NOTIFIER_HOST.endsWith('epfl.ch')) {
       smtpDebug(`Using EPFL mail service to send the email`)
       let info = await epflTransporter.sendMail(emailInfo)
       smtpDebug(`SMTP server returned: ${info.response}`)
+    } else {
+      if (process.env.ETHEREAL_USERNAME) {
+        smtpDebug(`Using ethereal mail service to send the email`)
+        const etherealMail = await etherealTransporter()
+        let info = await etherealMail.sendMail(emailInfo);
+
+        smtpDebug("Message sent: %s", info.messageId);
+        console.log("Preview URL: %s", getTestMessageUrl(info));
+      } else {
+        const errorMsg = `Unable to send this email, look like the env NOTIFIER_HOST is wrongly configured, or Ethereal auths are wrongly configured`
+        console.error(errorMsg)
+        return job.fail(errorMsg)
+      }
     }
 
     // AfterTask worker business logic goes here
