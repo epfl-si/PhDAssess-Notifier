@@ -73,6 +73,8 @@
                 value: 'Annual report <noreply@epfl.ch>'
               - name: 'CONSOLE_LOG_JSON_NO_STACK_FOR_NON_ERROR'
                 value: 'true'
+              - name: 'CONSOLE_LOG_JSON_NO_FILE_NAME'
+                value: 'true'
               - name: "{{ encryption_key_name }}"
                 valueFrom:
                   secretKeyRef:

@@ -1,6 +1,5 @@
 import {ZBClient} from "zeebe-node";
 import {Duration, ZBWorkerTaskHandler} from 'zeebe-node'
-import __ from 'lodash'
 import debug_ from 'debug'
 import {InputVariables, CustomHeaders, OutputVariables} from "./types"
 import Mustache from "mustache"
@@ -8,7 +7,7 @@ import {encrypt, decryptVariables} from "./encryption"
 import {epflTransporter, etherealTransporter} from "./transporters";
 import {getTestMessageUrl} from "nodemailer";
 import {Attachment} from "nodemailer/lib/mailer";
-import {stringToNotEmptyArrayString} from "./utils";
+import {flatPick, stringToNotEmptyArrayString} from "./utils";
 const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
@@ -28,7 +27,20 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
   console.log("Received and starting task", {
       taskType,
-      job: __.omit(job, 'customHeaders')
+      job: flatPick(job,
+        [
+          'key',
+          'workflowInstanceKey',
+          'workflowDefinitionVersion',
+          'elementId',
+          'worker',
+          'variables.created_at',
+          'variables.created_by',
+          'variables.to',
+          'variables.cc',
+          'variables.bcc',
+          ]
+      )
   })
 
   const jobVariables: InputVariables = decryptVariables(job)
