@@ -8,6 +8,7 @@ import {encrypt, decryptVariables} from "./encryption"
 import {epflTransporter, etherealTransporter} from "./transporters";
 import {getTestMessageUrl} from "nodemailer";
 import {Attachment} from "nodemailer/lib/mailer";
+import {stringToNotEmptyArrayString} from "./utils";
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
 const smtpDebug = debug_('phd-assess-notifier/SMTP')
@@ -66,9 +67,9 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     const emailInfo  = {
       from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
-      to: jobVariables.to,
-      cc: jobVariables.cc,
-      bcc: jobVariables.bcc,
+      to: stringToNotEmptyArrayString(jobVariables.to),
+      cc: stringToNotEmptyArrayString(jobVariables.cc),
+      bcc: stringToNotEmptyArrayString(jobVariables.bcc),
       subject: renderedSubject,
       html: renderedMessage,
       attachments: attachments

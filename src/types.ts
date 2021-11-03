@@ -1,7 +1,7 @@
 export interface InputVariables {
-  to?: string
-  cc?: string
-  bcc?: string
+  to?: string | string[]
+  cc?: string | string[]
+  bcc?: string | string[]
   PDF?: string
 }
 
