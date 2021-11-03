@@ -9,6 +9,7 @@ import {epflTransporter, etherealTransporter} from "./transporters";
 import {getTestMessageUrl} from "nodemailer";
 import {Attachment} from "nodemailer/lib/mailer";
 import {stringToNotEmptyArrayString} from "./utils";
+const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
 const smtpDebug = debug_('phd-assess-notifier/SMTP')
@@ -104,8 +105,10 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 }
 
 export const startWorker = () => {
-  console.log("starting worker")
-  zBClient.createWorker({
+  console.log(`starting phd-assess-notifier version ${version}...`)
+  console.log("starting worker...")
+
+  const worker = zBClient.createWorker({
     taskType: taskType,
     maxJobsToActivate: 5,
     // Set timeout, the same as we will ask yourself if the job is still up
@@ -113,5 +116,7 @@ export const startWorker = () => {
     // load every job into the in-memory server db
     taskHandler: handler
   })
+
   console.log(`worker started, awaiting for ${taskType} jobs...`)
+  return worker
 }
