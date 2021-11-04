@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/notifier.js",
   "scripts": {
-    "start": "genversion --es6 src/version.js && ts-node -r dotenv/config ./src/index.ts",
+    "start": "genversion src/version.js && ts-node -r dotenv/config ./src/index.ts",
     "test": "mocha -r ts-node/register tests/**/*.test.ts",
     "build": "tsc -p . && genversion build/version.js",
     "build-docker": "npm run build && docker build --tag phd-assess-notifier ."
