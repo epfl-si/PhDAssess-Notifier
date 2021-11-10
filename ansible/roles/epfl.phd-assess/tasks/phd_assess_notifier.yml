@@ -1,4 +1,4 @@
-- name: Locally build and tag phd-assess-meteor image
+- name: Locally build and tag phd-assess-notifier image
   tags:
     - notifier-build
     - never
@@ -29,7 +29,7 @@
 
 - name: phd-assess-notifier Deployment Config
   tags:
-    - meteor
+    - notifier
   openshift:
     apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
