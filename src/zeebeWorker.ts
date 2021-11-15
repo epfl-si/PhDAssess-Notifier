@@ -70,9 +70,15 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     let attachments: Attachment[] = []
 
+    const today = new Date();
+    const currentDay = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`
+
+    // @ts-ignore
+    const fileName = `phd_annual_report_${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
+
     if (jobVariables.PDF) {
       attachments.push({
-        filename: `phd_annual_report_${job.key}.pdf`,
+        filename: fileName,
         content: jobVariables.PDF,
         encoding: 'base64',
       })
