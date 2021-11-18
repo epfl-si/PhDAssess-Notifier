@@ -8,6 +8,7 @@
   delegate_to: localhost
   register: output_docker_build
 - debug: var=output_docker_build.stdout_lines
+  include_vars: main.yml
   tags:
     - notifier-build
     - never
@@ -23,6 +24,7 @@
   register: output_push_image
   delegate_to: localhost
 - debug: var=output_push_image.stdout_lines
+  include_vars: main.yml
   tags:
     - notifier-push
     - never
