@@ -62,7 +62,7 @@
           containers:
             - env:
               - name: 'ZEEBE_ADDRESS'
-                value: 'zeebe-broker:26500'
+                value: 'zeebe-gateway:26500'
               - name: 'ZEEBE_TASK_TYPE'
                 value: 'notification'
               - name: 'NOTIFIER_PORT'
