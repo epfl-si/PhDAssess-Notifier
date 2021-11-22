@@ -73,6 +73,14 @@ docker_check () {
   which docker >/dev/null || fatal "Please install docker"
 }
 
+inventory_mode="test"
+inventories () {
+    echo "-i inventory.yml -i inventory/test.yml"
+    case "$inventory_mode" in
+        *prod*) echo "-i inventory/prod.yml" ;;
+    esac
+}
+
 ###########################################################################
 
 mode=ansible-playbook
@@ -82,6 +90,9 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
         -m) mode=ansible
             ansible_args+=("-m")
+            shift ;;
+        --prod)
+            inventory_mode="test_and_prod"
             shift ;;
         *)
             ansible_args+=("$1")
@@ -95,10 +106,6 @@ case "$(uname -s)" in
 esac
 
 set -e
-
-inventories () {
-    echo "-i hosts-oc-prod"
-}
 
 platform_check
 case "$mode" in

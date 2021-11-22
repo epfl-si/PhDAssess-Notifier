@@ -3,7 +3,7 @@
 #   ansible-playbook playbook.yml -i hosts-oc-prod
 
 - name: PhD Assess notifier
-  hosts: all
+  hosts: openshift_namespaces
   gather_facts: no   # Not yet
   roles:
     - role: roles/epfl.phd-assess
