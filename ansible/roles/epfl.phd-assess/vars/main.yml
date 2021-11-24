@@ -9,4 +9,30 @@ openshift_image_registry: "os-docker-registry.epfl.ch"
 openshift_local_image_registry: "docker-registry.default.svc:5000"
 phd_assess_notifier_image_tag: "{{openshift_image_registry}}/{{openshift_namespace}}/{{phd_assess_notifier_servicename}}:latest"
 secret_name: "phd-assess.secrets"
+notifier_secret_name: "phd-assess.notifier.secrets"
 encryption_key_name: "PHDASSESS_ENCRYPTION_KEY"
+ethereal_password_key_name: "ETHEREAL_PASSWORD"
+deployment_envs_common:
+  - name: 'ZEEBE_ADDRESS'
+    value: 'zeebe-gateway:26500'
+  - name: 'ZEEBE_TASK_TYPE'
+    value: 'notification'
+  - name: 'NOTIFIER_PORT'
+    value: "{{ notifier_port }}"
+  - name: 'NOTIFIER_HOST'
+    value: "{{ notifier_host }}"
+  - name: 'NOTIFIER_FROM_ADDRESS'
+    value: '{{ notifier_from_address }}'
+  - name: 'CONSOLE_LOG_JSON_NO_STACK_FOR_NON_ERROR'
+    value: 'true'
+  - name: 'CONSOLE_LOG_JSON_NO_FILE_NAME'
+    value: 'true'
+  - name: "{{ encryption_key_name }}"
+    valueFrom:
+      secretKeyRef:
+        name: "{{ secret_name }}"
+        key: "{{ encryption_key_name }}"
+
+deployment_envs: >-
+  {{ deployment_envs_common + deployment_envs_specific if openshift_namespace == "phd-assess-test"
+      else deployment_envs_common }}

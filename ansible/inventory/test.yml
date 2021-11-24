@@ -5,6 +5,17 @@ all:
   children:
     openshift_namespaces:
       hosts:
-        phd-assess-test: {}
-      vars:
-        notifier_from_address: "Annual report test <noreply@epfl.ch>"
+        phd-assess-test:
+          notifier_port: "587"
+          notifier_host: "smtp.ethereal.email"
+          notifier_from_address: "Annual report test <noreply@epfl.ch>"
+          deployment_envs_specific:
+            - name: "ETHEREAL_USERNAME"
+              value: "casandra.greenfelder@ethereal.email"
+            - name: "ETHEREAL_NAME"
+              value: "Casandra Greenfelder"
+            - name: "ETHEREAL_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "phd-assess.notifier.secrets"
+                  key: "ETHEREAL_PASSWORD"

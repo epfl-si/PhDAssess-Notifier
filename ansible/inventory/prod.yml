@@ -5,6 +5,7 @@ all:
   children:
     openshift_namespaces:
       hosts:
-        phd-assess: {}
-      vars:
-        notifier_from_address: "Annual report <noreply@epfl.ch>"
+        phd-assess:
+          notifier_port: "25"
+          notifier_host: "mail.epfl.ch"
+          notifier_from_address: "Annual report <noreply@epfl.ch>"

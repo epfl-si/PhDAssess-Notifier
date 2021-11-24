@@ -60,26 +60,7 @@
             deployment-config.name: phd-assess-notifier
         spec:
           containers:
-            - env:
-              - name: 'ZEEBE_ADDRESS'
-                value: 'zeebe-gateway:26500'
-              - name: 'ZEEBE_TASK_TYPE'
-                value: 'notification'
-              - name: 'NOTIFIER_PORT'
-                value: '25'
-              - name: 'NOTIFIER_HOST'
-                value: 'mail.epfl.ch'
-              - name: 'NOTIFIER_FROM_ADDRESS'
-                value: '{{ notifier_from_address }}'
-              - name: 'CONSOLE_LOG_JSON_NO_STACK_FOR_NON_ERROR'
-                value: 'true'
-              - name: 'CONSOLE_LOG_JSON_NO_FILE_NAME'
-                value: 'true'
-              - name: "{{ encryption_key_name }}"
-                valueFrom:
-                  secretKeyRef:
-                    name: "{{ secret_name }}"
-                    key: "{{ encryption_key_name }}"
+            - env: "{{ deployment_envs }}"
               image: 'docker-registry.default.svc:5000/{{openshift_namespace}}/phd-assess-notifier:latest'
               imagePullPolicy: Always
               name: phd-assess-notifier
