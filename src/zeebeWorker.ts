@@ -75,7 +75,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     const pdfName = job.customHeaders.pdfName
 
     // @ts-ignore
-    const fileName = `${pdfName}_${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
+    const fileName = `${pdfName?pdfName+'_':''}${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
 
     if (jobVariables.PDF) {
       attachments.push({
