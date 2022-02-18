@@ -72,9 +72,10 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     const today = new Date();
     const currentDay = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`
+    const pdfName = job.customHeaders.pdfName
 
     // @ts-ignore
-    const fileName = `phd_annual_report_${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
+    const fileName = `${pdfName}_${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
 
     if (jobVariables.PDF) {
       attachments.push({
