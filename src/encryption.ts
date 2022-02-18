@@ -36,8 +36,7 @@ export function decryptVariables(job: Job): {[key: string]: string | null} {
     try {
       if (job.variables[key] == null) {  // null is a "defined" valid json entry
         decryptedVariables[key] = null
-      }
-      if (Array.isArray(job.variables[key])) {
+      } else if (Array.isArray(job.variables[key])) {
         decryptedVariables[key] = job.variables[key].reduce((acc: string[], item: string | null) => {
           acc.push(decrypt(item))
           return acc
