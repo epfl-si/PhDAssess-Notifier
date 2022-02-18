@@ -17,7 +17,7 @@ export function encrypt(message: string | [], passphrase: string | undefined = p
 
 }
 
-export function decrypt(cryptedMessage: string, passphrase: string | undefined = process.env.PHDASSESS_ENCRYPTION_KEY): string {
+export function decrypt(cryptedMessage: string | null, passphrase: string | undefined = process.env.PHDASSESS_ENCRYPTION_KEY): string {
   if (passphrase === undefined) {
     throw 'encryption error, Trying to encrypt a value without a passphrase set'
   }
@@ -29,13 +29,16 @@ export function decrypt(cryptedMessage: string, passphrase: string | undefined =
   }
 }
 
-export function decryptVariables(job: Job): {[key: string]: string} {
-  const decryptedVariables: {[key: string]: string} = {}
+export function decryptVariables(job: Job): {[key: string]: string | null} {
+  const decryptedVariables: {[key: string]: string | null} = {}
 
   Object.keys(job.variables).map((key) => {
     try {
+      if (job.variables[key] == null) {  // null is a "defined" valid json entry
+        decryptedVariables[key] = null
+      }
       if (Array.isArray(job.variables[key])) {
-        decryptedVariables[key] = job.variables[key].reduce((acc: string[], item: string) => {
+        decryptedVariables[key] = job.variables[key].reduce((acc: string[], item: string | null) => {
           acc.push(decrypt(item))
           return acc
         }, [])
