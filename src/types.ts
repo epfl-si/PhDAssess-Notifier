@@ -12,5 +12,5 @@ export interface OutputVariables {
 export interface CustomHeaders {
     subject: string
     message: string
-    pdfName : string
+    pdfName?: string
 }
