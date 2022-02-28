@@ -6,7 +6,7 @@ import Mustache from "mustache"
 import {encrypt, decryptVariables} from "./encryption"
 import {epflTransporter, etherealTransporter} from "./transporters";
 import {getTestMessageUrl} from "nodemailer";
-import {Attachment} from "nodemailer/lib/mailer";
+import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 const version = require('./version.js');
 
@@ -82,6 +82,9 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
         filename: fileName,
         content: jobVariables.PDF,
         encoding: 'base64',
+        /* add the static "FILENAME", to complete the generated FILENAME* ones that
+          are very good but not legacy (yeah for some email readers) */
+        headers: {'filename': fileName} as Headers
       })
     }
 
