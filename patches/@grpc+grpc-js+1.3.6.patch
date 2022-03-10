@@ -1,0 +1,21 @@
+diff --git a/node_modules/@grpc/grpc-js/build/src/constants.js b/node_modules/@grpc/grpc-js/build/src/constants.js
+index b1a8e5f..a5e361a 100644
+--- a/node_modules/@grpc/grpc-js/build/src/constants.js
++++ b/node_modules/@grpc/grpc-js/build/src/constants.js
+@@ -60,5 +60,5 @@ var Propagate;
+ // -1 means unlimited
+ exports.DEFAULT_MAX_SEND_MESSAGE_LENGTH = -1;
+ // 4 MB default
+-exports.DEFAULT_MAX_RECEIVE_MESSAGE_LENGTH = 4 * 1024 * 1024;
++exports.DEFAULT_MAX_RECEIVE_MESSAGE_LENGTH = 10 * 1024 * 1024;
+ //# sourceMappingURL=constants.js.map
+diff --git a/node_modules/@grpc/grpc-js/src/constants.ts b/node_modules/@grpc/grpc-js/src/constants.ts
+index 94763cf..eaf6e9a 100644
+--- a/node_modules/@grpc/grpc-js/src/constants.ts
++++ b/node_modules/@grpc/grpc-js/src/constants.ts
+@@ -59,4 +59,4 @@ export enum Propagate {
+ export const DEFAULT_MAX_SEND_MESSAGE_LENGTH = -1;
+ 
+ // 4 MB default
+-export const DEFAULT_MAX_RECEIVE_MESSAGE_LENGTH = 4 * 1024 * 1024;
++export const DEFAULT_MAX_RECEIVE_MESSAGE_LENGTH = 10 * 1024 * 1024;
