@@ -11,9 +11,9 @@ all:
           notifier_from_address: "Annual report test <noreply@epfl.ch>"
           deployment_envs_specific:
             - name: "ETHEREAL_USERNAME"
-              value: "casandra.greenfelder@ethereal.email"
+              value: "{{ lookup('file', '/keybase/team/epfl_phdassess.test/ETHEREAL_USERNAME') }}"
             - name: "ETHEREAL_NAME"
-              value: "Casandra Greenfelder"
+              value: "{{ lookup('file', '/keybase/team/epfl_phdassess.test/ETHEREAL_USERNAME') }}"
             - name: "ETHEREAL_PASSWORD"
               valueFrom:
                 secretKeyRef:

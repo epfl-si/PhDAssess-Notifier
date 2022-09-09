@@ -26,7 +26,7 @@ describe('Send email tests', () => {
 
     const emailInfo  = {
       from: "nope@nope.no",
-      to: "casandra.greenfelder@ethereal.email",
+      to: process.env.ETHEREAL_USERNAME || "casandra.greenfelder@ethereal.email",
       subject: "testing filename",
       html: message,
       attachments: attachments
