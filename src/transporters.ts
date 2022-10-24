@@ -6,7 +6,7 @@ export const epflTransporter = createTransport({
   port: Number(process.env.NOTIFIER_PORT),
   secure: false,
   tls: {
-    ciphers:'SSLv3'
+    ciphers:'TLSv1.2'
   }
 })
 
