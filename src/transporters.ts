@@ -3,11 +3,7 @@ import * as Process from "process";
 
 export const epflTransporter = createTransport({
   host: process.env.NOTIFIER_HOST,
-  port: Number(process.env.NOTIFIER_PORT),
-  secure: false,
-  tls: {
-    ciphers:'TLSv1.2'
-  }
+  port: Number(process.env.NOTIFIER_PORT)
 })
 
 // create reusable transporter object using the default SMTP transport
