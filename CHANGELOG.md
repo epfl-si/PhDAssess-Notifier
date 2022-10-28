@@ -1,5 +1,11 @@
 # CHANGELOG
 
+*1.2.1* (2022-10-28)
+- Update Typescript to 4.8
+
+*1.2.0* (2022-10-24)
+- Update TLS level for the EPFL SMTP
+
 *1.1.3* (2022-03-10)
 - Fix the GRPC limit on messages
 
