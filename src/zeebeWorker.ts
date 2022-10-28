@@ -98,7 +98,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       attachments: attachments
     }
 
-    if (process.env.NOTIFIER_HOST && process.env.NOTIFIER_HOST.endsWith('epfl.ch')) {
+    if (process.env.NOTIFIER_HOST?.endsWith('epfl.ch')) {
       smtpDebug(`Using EPFL mail service to send the email`)
       let info = await epflTransporter.sendMail(emailInfo)
       smtpDebug(`SMTP server returned: ${info.response}`)
