@@ -1,5 +1,8 @@
 # CHANGELOG
 
+*1.3.0* (2022-11-09)
+- Move test from a static ethereal account to a dynamically generated one
+
 *1.2.1* (2022-10-28)
 - Update Typescript to 4.8
 

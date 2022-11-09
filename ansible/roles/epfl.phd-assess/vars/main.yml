@@ -11,7 +11,6 @@ phd_assess_notifier_remote_image_tag: "{{openshift_image_registry}}/{{openshift_
 secret_name: "phd-assess.secrets"
 notifier_secret_name: "phd-assess.notifier.secrets"
 encryption_key_name: "PHDASSESS_ENCRYPTION_KEY"
-ethereal_password_key_name: "ETHEREAL_PASSWORD"
 deployment_envs_common:
   - name: 'ZEEBE_ADDRESS'
     value: 'zeebe-gateway:26500'

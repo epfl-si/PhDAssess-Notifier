@@ -4,10 +4,11 @@ import debug_ from 'debug'
 import {InputVariables, CustomHeaders, OutputVariables} from "./types"
 import Mustache from "mustache"
 import {encrypt, decryptVariables} from "./encryption"
-import {epflTransporter, etherealTransporter} from "./transporters";
-import {getTestMessageUrl} from "nodemailer";
+import {getTestMessageUrl, SendMailOptions} from "nodemailer";
 import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
+import {epflTransporter} from "./transporters/epfl";
+import {sendMail as etherealSendMail} from "./transporters/ethereal";
 const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
@@ -88,7 +89,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       })
     }
 
-    const emailInfo  = {
+    const emailInfo: SendMailOptions  = {
       from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
       to: stringToNotEmptyArrayString(jobVariables.to),
       cc: stringToNotEmptyArrayString(jobVariables.cc),
@@ -102,19 +103,16 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       smtpDebug(`Using EPFL mail service to send the email`)
       let info = await epflTransporter.sendMail(emailInfo)
       smtpDebug(`SMTP server returned: ${info.response}`)
+    } else if (process.env.NOTIFIER_HOST === 'smtp.ethereal.email') {
+      // when we use ethereal, try to send the mail, first, if it fails, it may mean we need to create the account and retry
+      smtpDebug(`Using ethereal mail service to send the email`)
+      let info = await etherealSendMail(emailInfo)
+      smtpDebug("Message sent: %s", info.messageId);
+      console.log("Preview URL: %s", getTestMessageUrl(info));
     } else {
-      if (process.env.ETHEREAL_USERNAME) {
-        smtpDebug(`Using ethereal mail service to send the email`)
-        const etherealMail = await etherealTransporter()
-        let info = await etherealMail.sendMail(emailInfo);
-
-        smtpDebug("Message sent: %s", info.messageId);
-        console.log("Preview URL: %s", getTestMessageUrl(info));
-      } else {
-        const errorMsg = `Unable to send this email, look like the env NOTIFIER_HOST is wrongly configured, or Ethereal auths are wrongly configured`
-        console.error(errorMsg)
-        return job.fail(errorMsg)
-      }
+      const errorMsg = `Unable to send this email, look like the env NOTIFIER_HOST is wrongly configured, or Ethereal auths are wrongly configured`
+      console.error(errorMsg)
+      return job.fail(errorMsg)
     }
 
     // AfterTask worker business logic goes here
