@@ -1,8 +1,6 @@
 import {createTransport, createTestAccount, SendMailOptions} from "nodemailer";
 import * as Process from "process";
-import debug_ from "debug";
 
-const smtpDebug = debug_('phd-assess-notifier/SMTP')
 
 // make auth info persistant in memory, validity test is done at sending
 let etherealUsername: string | null, etherealPassword: string | null = null
@@ -26,7 +24,7 @@ const generateAccount = async () => {
   let testAccount = await createTestAccount();
   etherealUsername = testAccount.user // generated ethereal user
   etherealPassword = testAccount.pass // generated ethereal password
-  smtpDebug(`New ethereal account created: user: ${etherealUsername}, password: ${etherealPassword}`)
+  console.log(`New ethereal account created: user: ${etherealUsername}, password: ${etherealPassword}`)
 }
 
 export const sendMail = async (emailInfo: SendMailOptions) => {
