@@ -1,4 +1,9 @@
-**
-!/build
-!/package*.json
-!/patches
+.idea
+.git
+.editorconfig
+.env
+ansible/
+node_modules/
+Dockerfile
+build/
+tests/

@@ -1,10 +1,10 @@
-- name: Locally build and tag phd-assess-notifier image
+- name: Locally (and silently) build and tag phd-assess-notifier image
   tags:
     - notifier-build
     - never
   shell: |
     set -e -x
-    npm run build && docker build --tag {{ phd_assess_notifier_servicename }} ..
+    docker build --tag {{ phd_assess_notifier_servicename }} ..
   delegate_to: localhost
   register: output_docker_build
 - debug: var=output_docker_build.stdout_lines

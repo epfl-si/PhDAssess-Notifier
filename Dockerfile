@@ -1,15 +1,21 @@
-FROM node:18-alpine
-
-ENV NODE_ENV=production
+FROM node:16-alpine AS common
 
 WORKDIR /app
 RUN mkdir -p out
-
 COPY package*.json ./
 COPY patches/ ./patches
 
-RUN npm install --production
 
-COPY build/ ./
+FROM common AS build
+RUN npm install
+COPY . ./
+RUN npm run build
 
-CMD [ "node", "index.js" ]
+
+FROM common
+
+ENV NODE_ENV=production
+RUN npm install
+COPY --from=build /app/build/ .
+
+CMD node index.js
