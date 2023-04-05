@@ -9,6 +9,7 @@ import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 import {epflTransporter} from "./transporters/epfl";
 import {sendMail as etherealSendMail} from "./transporters/ethereal";
+import specialHooks from "./specialHooks";
 const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
@@ -45,6 +46,9 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   })
 
   const jobVariables: InputVariables = decryptVariables(job)
+
+  // hook special rules to modify before checking validity
+  job = specialHooks(job)
 
   debug(`Checking task validity...`)
   let whatsMissingDescription: string[] = []
