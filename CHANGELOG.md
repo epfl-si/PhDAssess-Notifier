@@ -1,5 +1,8 @@
 # CHANGELOG
 
+*1.3.1* (2023-04-05)
+- Add additional log info when using ethereal account
+
 *1.3.0* (2022-11-09)
 - Move test from a static ethereal account to a dynamically generated one
 

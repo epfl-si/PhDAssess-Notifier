@@ -1,5 +1,4 @@
 import {createTransport, createTestAccount, SendMailOptions} from "nodemailer";
-import * as Process from "process";
 
 
 // make auth info persistant in memory, validity test is done at sending
@@ -8,6 +7,7 @@ let etherealUsername: string | null, etherealPassword: string | null = null
 // create reusable transporter object using the default SMTP transport
 const etherealTransporter = async () => {
   if (!etherealUsername || !etherealPassword) await generateAccount()
+  console.log(`Using ethereal account values: user: ${etherealUsername}, password: ${etherealPassword}`)
 
   return createTransport({
     host: process.env.NOTIFIER_HOST || "smtp.ethereal.email",
