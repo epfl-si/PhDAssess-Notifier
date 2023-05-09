@@ -1,5 +1,8 @@
 # CHANGELOG
 
+*1.4.0* (2023-05-09)
+- Update libs
+
 *1.3.1* (2023-04-05)
 - Add additional log info when using ethereal account
 

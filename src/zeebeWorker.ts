@@ -21,9 +21,7 @@ export const zBClient = new ZBClient({
 const taskType = process.env.ZEEBE_TASK_TYPE ? process.env.ZEEBE_TASK_TYPE : ''
 
 const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariables> = async (
-  job,
-  _,
-  worker
+  job
   ) => {
 
   console.log("Received and starting task", {
@@ -31,8 +29,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       job: flatPick(job,
         [
           'key',
-          'workflowInstanceKey',
-          'workflowDefinitionVersion',
+          'processInstanceKey',
+          'processDefinitionVersion',
           'elementId',
           'worker',
           'variables.created_at',
@@ -58,8 +56,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   if (whatsMissingDescription.length > 0) {
     debug(`Job variables : ${jobVariables}`)
     debug(`Job custom headers : ${job.customHeaders}`)
-    worker.log(`Failing the job without any retry because ${whatsMissingDescription}.
-     Fix the workflow BPMN version n. ${job.workflowDefinitionVersion}, step ${job.elementId}`)
+    debug(`Failing the job without any retry because ${whatsMissingDescription}.
+     Fix the workflow BPMN version n. ${job.processDefinitionVersion}, step ${job.elementId}`)
     return job.error('unexpected BPMN variables', whatsMissingDescription.join(', '))
   } else {
     debug(`Task has pass the validity, continuing`)
