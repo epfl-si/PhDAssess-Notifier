@@ -10,6 +10,9 @@
     "build-docker": "npm run build && docker build --tag phd-assess-notifier .",
     "postinstall": "patch-package"
   },
+  "engines": {
+    "node": "18"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
