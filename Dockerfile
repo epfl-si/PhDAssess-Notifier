@@ -1,4 +1,4 @@
-FROM node:16-alpine AS common
+FROM node:18-alpine AS common
 
 WORKDIR /app
 RUN mkdir -p out
