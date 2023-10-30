@@ -9,6 +9,7 @@ import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 import {epflTransporter} from "./transporters/epfl";
 import {sendMail as etherealSendMail} from "./transporters/ethereal";
+import {NotificationLog} from "phd-assess-meta/types/notification";
 const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
@@ -19,6 +20,12 @@ export const zBClient = new ZBClient({
 })
 
 const taskType = process.env.ZEEBE_TASK_TYPE ? process.env.ZEEBE_TASK_TYPE : ''
+
+// list which variables are not encrypted.
+const alreadyDecryptedVariables = [
+  'dashboardDefinition',
+  'uuid',
+]
 
 const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariables> = async (
   job
@@ -42,28 +49,33 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       )
   })
 
-  const jobVariables: InputVariables = decryptVariables(job)
+  const jobVariables: InputVariables = decryptVariables(job, alreadyDecryptedVariables)
+
+  // subject and message can come from two source, as customHeader, or as variable.
+  // When the data comes from customHeader, it has the priority. Mainly used in old workflows.
+  const subject = job.customHeaders.subject ?? jobVariables.subject
+  const message = job.customHeaders.message ?? jobVariables.message
 
   debug(`Checking task validity...`)
   let whatsMissingDescription: string[] = []
-  if (!job.customHeaders.subject)
-    whatsMissingDescription.push('job custom headers has no "subject"')
-  if (!job.customHeaders.message)
-    whatsMissingDescription.push('job custom headers has no "message"')
+  if (!subject)
+    whatsMissingDescription.push('job received has no "subject" entry')
+  if (!message)
+    whatsMissingDescription.push('job received has no "message" entry')
   if (!jobVariables.to)
     whatsMissingDescription.push('job variables has no "to"')
 
   if (whatsMissingDescription.length > 0) {
-    debug(`Job variables : ${jobVariables}`)
-    debug(`Job custom headers : ${job.customHeaders}`)
+    debug(`Job variables : ${ JSON.stringify(jobVariables) }`)
+    debug(`Job custom headers : ${ JSON.stringify(job.customHeaders) }`)
     debug(`Failing the job without any retry because ${whatsMissingDescription}.
      Fix the workflow BPMN version n. ${job.processDefinitionVersion}, step ${job.elementId}`)
     return job.error('unexpected BPMN variables', whatsMissingDescription.join(', '))
   } else {
     debug(`Task has pass the validity, continuing`)
 
-    const renderedSubject = Mustache.render(job.customHeaders.subject, jobVariables)
-    const renderedMessage = Mustache.render(job.customHeaders.message, jobVariables)
+    const renderedSubject = Mustache.render(subject, jobVariables)
+    const renderedMessage = Mustache.render(message, jobVariables)
 
     debug(`Building the email info (rendering content, filling addresses, ...`)
 
@@ -71,10 +83,12 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     const today = new Date();
     const currentDay = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`
-    const pdfName = job.customHeaders.pdfName
+    const pdfName = job.customHeaders.pdfName ?? jobVariables.pdfName
+    const phdStudentName = jobVariables.phdStudentName ?? ''
+    const phdStudentSciper= jobVariables.phdStudentSciper ?? ''
 
     // @ts-ignore
-    const fileName = `${pdfName?pdfName+'_':''}${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
+    const fileName = `${pdfName?pdfName+'_':''}${phdStudentName.replace(/\s/g, '_')}_${phdStudentSciper}_${currentDay}.pdf`
 
     if (jobVariables.PDF) {
       attachments.push({
@@ -87,11 +101,17 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       })
     }
 
-    const emailInfo: SendMailOptions  = {
-      from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
+    const recipients = {
       to: stringToNotEmptyArrayString(jobVariables.to),
       cc: stringToNotEmptyArrayString(jobVariables.cc),
       bcc: stringToNotEmptyArrayString(jobVariables.bcc),
+    }
+
+    const emailInfo: SendMailOptions  = {
+      from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
+      to: recipients.to,
+      cc: recipients.cc,
+      bcc: recipients.bcc,
       subject: renderedSubject,
       html: renderedMessage,
       attachments: attachments
@@ -115,9 +135,21 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     // AfterTask worker business logic goes here
     debug(`Completing and updating the process instance, adding dateSent as output variables`)
-    const updateBrokerVariables = {
-      dateSent: encrypt(new Date().toJSON()),
+
+    const notificationLog: NotificationLog = {
+      sentAt: new Date().toJSON(),
+      sentTo: {
+        to: recipients.to,
+        cc: recipients.cc,
+        bcc: recipients.bcc,
+      },
+      fromElementId: jobVariables.fromElementId!,
     }
+
+    const updateBrokerVariables = {
+      sentLog: encrypt(JSON.stringify(notificationLog))
+    }
+
     return job.complete(updateBrokerVariables)
   }
 }
@@ -132,7 +164,7 @@ export const startWorker = () => {
     // Set timeout, the same as we will ask yourself if the job is still up
     timeout: Duration.minutes.of(2),
     // load every job into the in-memory server db
-    taskHandler: handler
+    taskHandler: handler,
   })
 
   console.log(`worker started, awaiting for ${taskType} jobs...`)
