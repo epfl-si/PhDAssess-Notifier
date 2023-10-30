@@ -29,11 +29,11 @@ export function decrypt(cryptedMessage: string | null, passphrase: string | unde
   }
 }
 
-export function decryptVariables(job: Job, ignoreKeys: string[]): {[key: string]: string | null} {
+export function decryptVariables(job: Job, ignoreKeys: string[] = []): {[key: string]: string | null} {
   const decryptedVariables: {[key: string]: string | null} = {}
 
   Object.keys(job.variables).map((key) => {
-    if (key in ignoreKeys) {
+    if (ignoreKeys.includes(key)) {
       decryptedVariables[key] = job.variables[key]
     } else {
       try {

@@ -9,6 +9,7 @@ import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 import {epflTransporter} from "./transporters/epfl";
 import {sendMail as etherealSendMail} from "./transporters/ethereal";
+import {NotificationLog} from "phd-assess-meta/types/notification";
 const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
@@ -19,6 +20,12 @@ export const zBClient = new ZBClient({
 })
 
 const taskType = process.env.ZEEBE_TASK_TYPE ? process.env.ZEEBE_TASK_TYPE : ''
+
+// list which variables are not encrypted.
+const alreadyDecryptedVariables = [
+  'dashboardDefinition',
+  'uuid',
+]
 
 const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariables> = async (
   job
@@ -42,17 +49,12 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       )
   })
 
-  // REFACTOR: there are better ways to do this
-  // get encrypted and clear data separately
-  let subject = job.variables.subject
-  let message = job.variables.message
-
-  const jobVariables: InputVariables = decryptVariables(job, ['subject', 'message'])
+  const jobVariables: InputVariables = decryptVariables(job, alreadyDecryptedVariables)
 
   // subject and message can come from two source, as customHeader, or as variable.
   // When the data comes from customHeader, it has the priority. Mainly used in old workflows.
-  subject = job.customHeaders.subject ?? subject
-  message = job.customHeaders.message ?? message
+  const subject = job.customHeaders.subject ?? jobVariables.subject
+  const message = job.customHeaders.message ?? jobVariables.message
 
   debug(`Checking task validity...`)
   let whatsMissingDescription: string[] = []
@@ -64,8 +66,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     whatsMissingDescription.push('job variables has no "to"')
 
   if (whatsMissingDescription.length > 0) {
-    debug(`Job variables : ${jobVariables}`)
-    debug(`Job custom headers : ${job.customHeaders}`)
+    debug(`Job variables : ${ JSON.stringify(jobVariables) }`)
+    debug(`Job custom headers : ${ JSON.stringify(job.customHeaders) }`)
     debug(`Failing the job without any retry because ${whatsMissingDescription}.
      Fix the workflow BPMN version n. ${job.processDefinitionVersion}, step ${job.elementId}`)
     return job.error('unexpected BPMN variables', whatsMissingDescription.join(', '))
@@ -81,7 +83,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     const today = new Date();
     const currentDay = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`
-    const pdfName = job.customHeaders.pdfName
+    const pdfName = job.customHeaders.pdfName ?? jobVariables.pdfName
     const phdStudentName = jobVariables.phdStudentName ?? ''
     const phdStudentSciper= jobVariables.phdStudentSciper ?? ''
 
@@ -134,16 +136,18 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     // AfterTask worker business logic goes here
     debug(`Completing and updating the process instance, adding dateSent as output variables`)
 
+    const notificationLog: NotificationLog = {
+      sentAt: new Date().toJSON(),
+      sentTo: {
+        to: recipients.to,
+        cc: recipients.cc,
+        bcc: recipients.bcc,
+      },
+      fromElementId: jobVariables.fromElementId!,
+    }
+
     const updateBrokerVariables = {
-      sentLog: {
-        sentAt: encrypt(new Date().toJSON()),
-        sentTo: {
-          to: recipients.to.map((recipient) => encrypt(recipient)),
-          cc: recipients.cc.map((recipient) => encrypt(recipient)),
-          bcc: recipients.bcc.map((recipient) => encrypt(recipient)),
-        },
-        sentElementId: job.elementId,
-      }
+      sentLog: encrypt(JSON.stringify(notificationLog))
     }
 
     return job.complete(updateBrokerVariables)
@@ -161,12 +165,6 @@ export const startWorker = () => {
     timeout: Duration.minutes.of(2),
     // load every job into the in-memory server db
     taskHandler: handler,
-    fetchVariable: [
-      'phdStudentName', 'phdStudentSciper',
-      'created_at', 'created_by',
-      'to', 'cc', 'bcc', 'subject', 'message',
-      'PDF',
-    ],
   })
 
   console.log(`worker started, awaiting for ${taskType} jobs...`)
