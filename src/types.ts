@@ -3,10 +3,24 @@ export interface InputVariables {
   cc?: string | string[]
   bcc?: string | string[]
   PDF?: string
+  subject?: string
+  message?: string
+  phdStudentName?: string
+  phdStudentSciper?: string
+  created_at?: string
+  created_by?: string
 }
 
 export interface OutputVariables {
-  dateSent: string
+  sentLog: {
+    sentAt: string
+    sentTo: {
+      to: string[]
+      cc: string[]
+      bcc: string[]
+    }
+    sentElementId: string
+  }
 }
 
 export interface CustomHeaders {

@@ -29,29 +29,33 @@ export function decrypt(cryptedMessage: string | null, passphrase: string | unde
   }
 }
 
-export function decryptVariables(job: Job): {[key: string]: string | null} {
+export function decryptVariables(job: Job, ignoreKeys: string[]): {[key: string]: string | null} {
   const decryptedVariables: {[key: string]: string | null} = {}
 
   Object.keys(job.variables).map((key) => {
-    try {
-      if (job.variables[key] == null) {  // null is a "defined" valid json entry
-        decryptedVariables[key] = null
-      } else if (Array.isArray(job.variables[key])) {
-        decryptedVariables[key] = job.variables[key].reduce((acc: string[], item: string | null) => {
-          acc.push(decrypt(item))
-          return acc
-        }, [])
-      } else {
-        decryptedVariables[key] = decrypt(job.variables[key])
-      }
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        // not good, some values are not readable. Get the error for now,
-        // but raise it after the whole decrypt
-        // we may need to do something afterward
-        debug(`Can't decrypt the key: ${key}`)
-      } else {
-        throw e
+    if (key in ignoreKeys) {
+      decryptedVariables[key] = job.variables[key]
+    } else {
+      try {
+        if (job.variables[key] == null) {  // null is a "defined" valid json entry
+          decryptedVariables[key] = null
+        } else if (Array.isArray(job.variables[key])) {
+          decryptedVariables[key] = job.variables[key].reduce((acc: string[], item: string | null) => {
+            acc.push(decrypt(item))
+            return acc
+          }, [])
+        } else {
+          decryptedVariables[key] = decrypt(job.variables[key])
+        }
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          // not good, some values are not readable. Get the error for now,
+          // but raise it after the whole decrypt
+          // we may need to do something afterward
+          debug(`Can't decrypt the key: ${ key }`)
+        } else {
+          throw e
+        }
       }
     }
   })

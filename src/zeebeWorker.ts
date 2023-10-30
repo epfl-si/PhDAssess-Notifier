@@ -42,14 +42,24 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       )
   })
 
-  const jobVariables: InputVariables = decryptVariables(job)
+  // REFACTOR: there are better ways to do this
+  // get encrypted and clear data separately
+  let subject = job.variables.subject
+  let message = job.variables.message
+
+  const jobVariables: InputVariables = decryptVariables(job, ['subject', 'message'])
+
+  // subject and message can come from two source, as customHeader, or as variable.
+  // When the data comes from customHeader, it has the priority. Mainly used in old workflows.
+  subject = job.customHeaders.subject ?? subject
+  message = job.customHeaders.message ?? message
 
   debug(`Checking task validity...`)
   let whatsMissingDescription: string[] = []
-  if (!job.customHeaders.subject)
-    whatsMissingDescription.push('job custom headers has no "subject"')
-  if (!job.customHeaders.message)
-    whatsMissingDescription.push('job custom headers has no "message"')
+  if (!subject)
+    whatsMissingDescription.push('job received has no "subject" entry')
+  if (!message)
+    whatsMissingDescription.push('job received has no "message" entry')
   if (!jobVariables.to)
     whatsMissingDescription.push('job variables has no "to"')
 
@@ -62,8 +72,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   } else {
     debug(`Task has pass the validity, continuing`)
 
-    const renderedSubject = Mustache.render(job.customHeaders.subject, jobVariables)
-    const renderedMessage = Mustache.render(job.customHeaders.message, jobVariables)
+    const renderedSubject = Mustache.render(subject, jobVariables)
+    const renderedMessage = Mustache.render(message, jobVariables)
 
     debug(`Building the email info (rendering content, filling addresses, ...`)
 
@@ -72,9 +82,11 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     const today = new Date();
     const currentDay = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`
     const pdfName = job.customHeaders.pdfName
+    const phdStudentName = jobVariables.phdStudentName ?? ''
+    const phdStudentSciper= jobVariables.phdStudentSciper ?? ''
 
     // @ts-ignore
-    const fileName = `${pdfName?pdfName+'_':''}${jobVariables.phdStudentName.replace(/\s/g, '_')}_${jobVariables.phdStudentSciper}_${currentDay}.pdf`
+    const fileName = `${pdfName?pdfName+'_':''}${phdStudentName.replace(/\s/g, '_')}_${phdStudentSciper}_${currentDay}.pdf`
 
     if (jobVariables.PDF) {
       attachments.push({
@@ -87,11 +99,17 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       })
     }
 
-    const emailInfo: SendMailOptions  = {
-      from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
+    const recipients = {
       to: stringToNotEmptyArrayString(jobVariables.to),
       cc: stringToNotEmptyArrayString(jobVariables.cc),
       bcc: stringToNotEmptyArrayString(jobVariables.bcc),
+    }
+
+    const emailInfo: SendMailOptions  = {
+      from: process.env.NOTIFIER_FROM_ADDRESS || "Annual report <noreply@epfl.ch>",
+      to: recipients.to,
+      cc: recipients.cc,
+      bcc: recipients.bcc,
       subject: renderedSubject,
       html: renderedMessage,
       attachments: attachments
@@ -115,9 +133,19 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     // AfterTask worker business logic goes here
     debug(`Completing and updating the process instance, adding dateSent as output variables`)
+
     const updateBrokerVariables = {
-      dateSent: encrypt(new Date().toJSON()),
+      sentLog: {
+        sentAt: encrypt(new Date().toJSON()),
+        sentTo: {
+          to: recipients.to.map((recipient) => encrypt(recipient)),
+          cc: recipients.cc.map((recipient) => encrypt(recipient)),
+          bcc: recipients.bcc.map((recipient) => encrypt(recipient)),
+        },
+        sentElementId: job.elementId,
+      }
     }
+
     return job.complete(updateBrokerVariables)
   }
 }
@@ -132,7 +160,13 @@ export const startWorker = () => {
     // Set timeout, the same as we will ask yourself if the job is still up
     timeout: Duration.minutes.of(2),
     // load every job into the in-memory server db
-    taskHandler: handler
+    taskHandler: handler,
+    fetchVariable: [
+      'phdStudentName', 'phdStudentSciper',
+      'created_at', 'created_by',
+      'to', 'cc', 'bcc', 'subject', 'message',
+      'PDF',
+    ],
   })
 
   console.log(`worker started, awaiting for ${taskType} jobs...`)
