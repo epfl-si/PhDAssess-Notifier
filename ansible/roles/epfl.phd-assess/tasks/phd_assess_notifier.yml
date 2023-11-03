@@ -4,7 +4,7 @@
     - never
   shell: |
     set -e -x
-    docker build --tag {{ phd_assess_notifier_servicename }} ..
+    docker build --platform=linux/amd64 --tag {{ phd_assess_notifier_servicename }} ..
   delegate_to: localhost
   register: output_docker_build
 - debug: var=output_docker_build.stdout_lines
