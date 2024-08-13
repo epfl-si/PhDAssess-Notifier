@@ -18,4 +18,4 @@ ENV NODE_ENV=production
 RUN npm install
 COPY --from=build /app/build/ .
 
-CMD node index.js
+CMD ["node", "index.js"]
