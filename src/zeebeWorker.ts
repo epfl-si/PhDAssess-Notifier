@@ -45,7 +45,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
           'variables.to',
           'variables.cc',
           'variables.bcc',
-          ]
+          'variables.type',
+        ]
       )
   })
 
@@ -133,8 +134,12 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       return job.fail(errorMsg)
     }
 
-    // AfterTask worker business logic goes here
-    debug(`Completing and updating the process instance, adding dateSent as output variables`)
+
+    // default means we have not a reminder, but a pending notification
+    // reminder can come in two ways, depending on the version of the workflow used
+    const notificationType = jobVariables.type ??
+      ( jobVariables.fromElementId!.endsWith('_reminder') ) ?
+        'reminder' : 'awaitingForm'
 
     const notificationLog: NotificationLog = {
       sentAt: new Date().toJSON(),
@@ -144,11 +149,14 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
         bcc: recipients.bcc,
       },
       fromElementId: jobVariables.fromElementId!,
+      type: notificationType,
     }
 
     const updateBrokerVariables = {
       sentLog: encrypt(JSON.stringify(notificationLog))
     }
+
+    debug(`Completing and updating the process instance variables with a notification log.`)
 
     return job.complete(updateBrokerVariables)
   }
