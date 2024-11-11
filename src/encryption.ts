@@ -6,7 +6,12 @@ import {Job} from "zeebe-node"
 import {PhDAssessVariables} from "phd-assess-meta/types/variables";
 
 
-export function encrypt(message: string | null | [], passphrase: string | undefined = process.env.PHDASSESS_ENCRYPTION_KEY): string | null {
+export function encrypt(message: string | null, passphrase: string | undefined = process.env.PHDASSESS_ENCRYPTION_KEY): string | null {
+  if (
+    process.env.PHDASSESS_SKIP_ENCRYPTION &&
+    process.env.PHDASSESS_SKIP_ENCRYPTION === 'true'
+  ) return message
+
   if (passphrase === undefined) {
     throw 'encryption error, trying to encrypt a value without a passphrase set'
   }
@@ -19,6 +24,11 @@ export function encrypt(message: string | null | [], passphrase: string | undefi
 }
 
 export function decrypt(cryptedMessage: string | null, passphrase: string | undefined = process.env.PHDASSESS_ENCRYPTION_KEY): string | null {
+  if (
+    process.env.PHDASSESS_SKIP_ENCRYPTION &&
+    process.env.PHDASSESS_SKIP_ENCRYPTION === 'true'
+  ) return cryptedMessage
+
   if (passphrase === undefined) {
     throw 'encryption error, Trying to encrypt a value without a passphrase set'
   }
