@@ -153,7 +153,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     }
 
     const updateBrokerVariables = {
-      sentLog: encrypt(JSON.stringify(notificationLog))
+      sentLog: encrypt(JSON.stringify(notificationLog)) as string
     }
 
     debug(`Completing and updating the process instance variables with a notification log.`)
