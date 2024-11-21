@@ -147,8 +147,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       sentAt: new Date().toJSON(),
       sentTo: {
         to: recipients.to,
-        cc: recipients.cc,
-        bcc: recipients.bcc,
+        cc: recipients.cc ?? undefined,
+        bcc: recipients.bcc ?? undefined,
       },
       fromElementId: jobVariables.fromElementId!,
       type: notificationType,
