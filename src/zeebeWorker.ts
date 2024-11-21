@@ -140,8 +140,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
     // default means we have not a reminder, but a pending notification
     // reminder can come in two ways, depending on the version of the workflow used
     const notificationType = jobVariables.type ??
-      ( jobVariables.fromElementId!.endsWith('_reminder') ) ?
-        'reminder' : 'awaitingForm'
+      ( jobVariables.fromElementId!.endsWith('_reminder') ?
+        'reminder' : 'awaitingForm' )
 
     const notificationLog: NotificationLog = {
       sentAt: new Date().toJSON(),
