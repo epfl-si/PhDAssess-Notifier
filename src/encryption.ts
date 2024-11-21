@@ -56,19 +56,21 @@ export function decryptVariables(job: Job, ignoreKeys: string[] = []): PhDAssess
       try {
         if (Array.isArray(job.variables[key])) {
           decryptedVariables[key] = job.variables[key].reduce((acc: ( string | null )[], item: string | null) => {
-            acc.push(decrypt(item))
+            const decryptedItem = decrypt(item)
+            if (decryptedItem !== null) acc.push(decryptedItem)
             return acc
           }, [])
         } else {
           decryptedVariables[key] = decrypt(job.variables[key])
         }
-      } catch (e) {
+      } catch (e: any) {
         if (e instanceof SyntaxError) {
           // not good, some values are not readable. Get the error for now,
           // but raise it after the whole decrypt
           // we may need to do something afterward
           debug(`Can't decrypt the key: ${ key }`)
         } else {
+          console.error(`Error on key: ${ key }. Error: ${ e.message }`)
           throw e
         }
       }
