@@ -47,7 +47,9 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
           'variables.bcc',
           'variables.type',
         ]
-      )
+      ),
+      hasPDFString: !!job.variables.PDF,
+      wantPDFName: job.customHeaders.pdfName,
   })
 
   const jobVariables: InputVariables = decryptVariables(job, alreadyDecryptedVariables)
