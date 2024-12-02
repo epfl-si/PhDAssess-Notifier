@@ -9,7 +9,7 @@ import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 import {epflTransporter} from "./transporters/epfl";
 import {sendMail as etherealSendMail} from "./transporters/ethereal";
-import {NotificationLog} from "phd-assess-meta/types/notification";
+import {NotificationLog, NotificationType} from "phd-assess-meta/types/notification";
 const version = require('./version.js');
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
@@ -137,12 +137,19 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       return job.fail(errorMsg)
     }
 
-    // By default, without a 'type' defined, we have not a reminder, but a pending notification.
-    // Reminders can come in two ways, depending on the version of the workflow used. In 'type' or in
-    // fromElementId, ending with '_reminder'
-    const notificationType = jobVariables.type ??
-      ( jobVariables.fromElementId!.endsWith('_reminder') ?
-        'reminder' : 'awaitingForm' )
+    /*
+     * By default, without a 'type' defined, we have not a reminder, but a pending notification.
+     * Reminders can come in two ways, depending on the version of the workflow used. In 'type' or in
+     * fromElementId, ending with '_reminder'
+     */
+    // can be empty, if coming from the bpmn directly instead of a zeebe publish message
+    let fromElementId = jobVariables.fromElementId ?? 'unknown_source'
+    let type: NotificationType = jobVariables.type ?? 'awaitingForm'
+
+    if (fromElementId.endsWith('_reminder')) {
+      fromElementId = fromElementId.substring(0, fromElementId.indexOf( '_reminder'))
+      type = 'reminder'
+    }
 
     const notificationLog: NotificationLog = {
       sentAt: new Date().toJSON(),
@@ -151,8 +158,8 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
         cc: recipients.cc ?? undefined,
         bcc: recipients.bcc ?? undefined,
       },
-      fromElementId: jobVariables.fromElementId!,
-      type: notificationType,
+      fromElementId: fromElementId,
+      type: type,
     }
 
     const updateBrokerVariables = {
