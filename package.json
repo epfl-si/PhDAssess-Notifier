@@ -1,6 +1,6 @@
 {
   "name": "phd-assess-notifier",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "",
   "main": "src/notifier.js",
   "scripts": {

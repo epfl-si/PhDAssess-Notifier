@@ -46,6 +46,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
           'variables.cc',
           'variables.bcc',
           'variables.type',
+          'variables.fromElementId',
         ]
       ),
       hasPDFString: !!job.variables.PDF,
@@ -136,9 +137,9 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
       return job.fail(errorMsg)
     }
 
-
-    // default means we have not a reminder, but a pending notification
-    // reminder can come in two ways, depending on the version of the workflow used
+    // By default, without a 'type' defined, we have not a reminder, but a pending notification.
+    // Reminders can come in two ways, depending on the version of the workflow used. In 'type' or in
+    // fromElementId, ending with '_reminder'
     const notificationType = jobVariables.type ??
       ( jobVariables.fromElementId!.endsWith('_reminder') ?
         'reminder' : 'awaitingForm' )
