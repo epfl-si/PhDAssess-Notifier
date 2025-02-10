@@ -1,4 +1,6 @@
-FROM node:18-alpine AS common
+ARG BASE_IMAGE=node:18-alpine
+
+FROM $BASE_IMAGE AS common
 
 WORKDIR /app
 RUN mkdir -p out
