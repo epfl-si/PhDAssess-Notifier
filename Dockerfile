@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=node:18-alpine
+ARG BASE_IMAGE=node:22-alpine
 
 FROM $BASE_IMAGE AS common
 
