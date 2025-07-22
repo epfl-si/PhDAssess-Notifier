@@ -1,6 +1,6 @@
 {
   "name": "phd-assess-notifier",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "",
   "main": "src/notifier.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "mustache": "^4.2.0",
     "nodemailer": "^6.9.7",
     "patch-package": "^7.0.0",
-    "zeebe-node": "^8.2.5"
+    "zeebe-node": "^8.3.2"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
