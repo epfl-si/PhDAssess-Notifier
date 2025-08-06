@@ -1,6 +1,6 @@
 {
   "name": "phd-assess-notifier",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "",
   "main": "src/notifier.js",
   "scripts": {
@@ -26,6 +26,8 @@
     "mustache": "^4.2.0",
     "nodemailer": "^6.9.7",
     "patch-package": "^7.0.0",
+    "phd-assess-meta": "github:epfl-si/PhDAssess-meta#feature/pdf-file",
+    "phdassess-ged-connector": "git+https://github.com/epfl-si/PhDAssess-GED-connector.git",
     "zeebe-node": "^8.3.2"
   },
   "devDependencies": {
@@ -42,7 +44,6 @@
     "chai-fs": "^2.0.0",
     "mocha": "10.1.0",
     "nodemailer-mock": "^1.5.10",
-    "phd-assess-meta": "github:epfl-si/PhDAssess-meta",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

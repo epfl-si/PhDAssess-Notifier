@@ -9,8 +9,11 @@ import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 import {epflTransporter} from "./transporters/epfl";
 import {sendMail as etherealSendMail} from "./transporters/ethereal";
+import {mergePDFs} from "phd-assess-meta"
 import {NotificationLog, NotificationType} from "phd-assess-meta/types/notification";
 const version = require('./version.js');
+import {fetchFileAsBase64, fetchTicket} from "phdassess-ged-connector";
+
 
 const debug = debug_('phd-assess-notifier/zeebeWorker')
 const smtpDebug = debug_('phd-assess-notifier/SMTP')
@@ -50,6 +53,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
         ]
       ),
       hasPDFString: !!job.variables.PDF,
+      hasPDFAnnexPath: !!job.variables.pdfAnnexPath,
       wantPDFName: job.customHeaders.pdfName,
   })
 
@@ -93,11 +97,28 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
     // @ts-ignore
     const fileName = `${pdfName?pdfName+'_':''}${phdStudentName.replace(/\s/g, '_')}_${phdStudentSciper}_${currentDay}.pdf`
+    let generatedPDF = jobVariables.PDF ?? ''
 
-    if (jobVariables.PDF) {
+    if (generatedPDF) {
+      // check the need to download an annex before attaching the provided PDF
+      if (jobVariables.pdfAnnexPath) {
+        const ticket = await fetchTicket({
+          serverUrl: process.env.ALFRESCO_URL!,
+          username: process.env.ALFRESCO_USERNAME!,
+          password: process.env.ALFRESCO_PASSWORD!,
+        })
+
+        const pdfAsBase64 = await fetchFileAsBase64(
+          jobVariables.pdfAnnexPath,
+          ticket,
+        )
+        // merge the two
+        generatedPDF = await mergePDFs(generatedPDF, pdfAsBase64)
+      }
+
       attachments.push({
         filename: fileName,
-        content: jobVariables.PDF,
+        content: generatedPDF,
         encoding: 'base64',
         /* add the static "FILENAME", to complete the generated FILENAME* ones that
           are very good but not legacy (yeah for some email readers) */

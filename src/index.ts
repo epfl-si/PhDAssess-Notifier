@@ -1,7 +1,10 @@
-import {startWorker, zBClient} from "./zeebeWorker";
 import { LoggerAdaptToConsole } from "console-log-json";
 
+import {startWorker, zBClient} from "./zeebeWorker";
+import {validateEnv} from "./validateEnv";
+
 require('dotenv').config()
+
 
 // Start logging as JSON if we are not in debug mode
 if (!process.env.DEBUG?.search('/\*/')) {
@@ -15,5 +18,7 @@ process.on( 'SIGINT', function() {
   zBClient.close().then(() => console.log('All workers closed'))
   process.exit( );
 })
+
+validateEnv()
 
 startWorker()
