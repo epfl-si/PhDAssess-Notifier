@@ -9,7 +9,7 @@ import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
 import {epflTransporter} from "./transporters/epfl";
 import {sendMail as etherealSendMail} from "./transporters/ethereal";
-import {mergePDFs} from "phd-assess-meta"
+import {mergePDFs} from "./utils"
 import {NotificationLog, NotificationType} from "phd-assess-meta/types/notification";
 const version = require('./version.js');
 import {fetchFileAsBase64, fetchTicket} from "phdassess-ged-connector";
