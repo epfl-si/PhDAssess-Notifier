@@ -1,6 +1,6 @@
 {
   "name": "phd-assess-notifier",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "description": "",
   "main": "src/notifier.js",
   "scripts": {
@@ -40,6 +40,7 @@
     "@types/lodash": "^4.14.194",
     "@types/mocha": "^10.0.1",
     "@types/mustache": "^4.2.2",
+    "@types/node-fetch": "^2.6.13",
     "@types/nodemailer": "^6.4.13",
     "chai": "^4.3.7",
     "chai-fs": "^2.0.0",
