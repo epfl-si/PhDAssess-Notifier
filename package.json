@@ -27,7 +27,7 @@
     "nodemailer": "^6.9.7",
     "patch-package": "^7.0.0",
     "pdf-lib": "^1.17.1",
-    "phd-assess-meta": "github:epfl-si/PhDAssess-meta#feature/pdf-file",
+    "phd-assess-meta": "github:epfl-si/PhDAssess-meta",
     "phdassess-ged-connector": "git+https://github.com/epfl-si/PhDAssess-GED-connector.git",
     "zeebe-node": "^8.3.2"
   },
