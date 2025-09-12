@@ -59,7 +59,7 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
 
   const jobVariables: InputVariables = decryptVariables(job, alreadyDecryptedVariables)
 
-  // subject and message can come from two source, as customHeader, or as variable.
+  // subject and message can come from two sources, as customHeader, or as variable.
   // When the data comes from customHeader, it has the priority. Mainly used in old workflows.
   const subject = job.customHeaders.subject ?? jobVariables.subject
   const message = job.customHeaders.message ?? jobVariables.message
