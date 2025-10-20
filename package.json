@@ -1,6 +1,6 @@
 {
   "name": "phd-assess-notifier",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "",
   "main": "src/notifier.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "console-log-json": "^2.11.2",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^4.2.0",
     "debug": "^4.3.4",
     "dotenv": "^16.0.3",
     "genversion": "^3.1.1",
@@ -28,14 +28,14 @@
     "patch-package": "^7.0.0",
     "pdf-lib": "^1.17.1",
     "phd-assess-meta": "github:epfl-si/PhDAssess-meta",
-    "phdassess-ged-connector": "git+https://github.com/epfl-si/PhDAssess-GED-connector.git",
+    "phdassess-ged-connector": "github:epfl-si/PhDAssess-GED-connector",
     "zeebe-node": "^8.3.2"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
     "@types/chai": "^4.3.5",
     "@types/chai-fs": "^2.0.2",
-    "@types/crypto-js": "^4.1.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/debug": "^4.1.5",
     "@types/lodash": "^4.14.194",
     "@types/mocha": "^10.0.1",
