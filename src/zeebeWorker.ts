@@ -3,7 +3,7 @@ import {Duration, ZBWorkerTaskHandler} from 'zeebe-node'
 import debug_ from 'debug'
 import {InputVariables, CustomHeaders, OutputVariables} from "./types"
 import Mustache from "mustache"
-import {encrypt, decryptVariables} from "./encryption"
+import {encrypt, decryptVariables, decrypt} from "./encryption"
 import {getTestMessageUrl, SendMailOptions} from "nodemailer";
 import {Attachment, Headers} from "nodemailer/lib/mailer";
 import {flatPick, stringToNotEmptyArrayString} from "./utils";
@@ -34,8 +34,15 @@ const handler: ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariable
   job
   ) => {
 
+  // get info for the logs
+  let phdStudentSciper: string | undefined | null = undefined
+  try {
+    phdStudentSciper = decrypt(job.variables.phdStudentSciper ?? null)
+  } catch (e) {}  // empty catch the next console.log will show the problem
+
   console.log("Received and starting task", {
       taskType,
+      phdStudentSciper: phdStudentSciper,
       job: flatPick(job,
         [
           'key',
